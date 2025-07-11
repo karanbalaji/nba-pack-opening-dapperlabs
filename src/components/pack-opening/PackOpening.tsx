@@ -231,11 +231,34 @@ export function PackOpening({ pack, onPackOpened, onClose }: PackOpeningProps) {
         </div>
 
         {/* Fireworks Effect */}
-        {showFireworks && (
-          <Fireworks 
-            className="absolute inset-0 pointer-events-none"
-          />
-        )}
+        <AnimatePresence>
+          {showFireworks && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1,
+                transition: { 
+                  duration: 0.6, 
+                  ease: "easeInOut"
+                }
+              }}
+              exit={{ 
+                opacity: 0, 
+                scale: 1.1,
+                transition: { 
+                  duration: 0.8, 
+                  ease: "easeInOut"
+                }
+              }}
+              className="absolute inset-0 pointer-events-none"
+            >
+              <Fireworks 
+                className="w-full h-full"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Main Content - Using flex layout for better control */}
         <div className="relative z-10 flex flex-col h-full">

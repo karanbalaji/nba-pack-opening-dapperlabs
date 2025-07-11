@@ -88,15 +88,29 @@ class FireworkParticle implements Particle {
     this.initialVelocityY = this.velocityY
   }
 
+  // Easing functions for smooth animations
+  private easeInCubic(t: number): number {
+    return t * t * t
+  }
+
+  private easeOutCubic(t: number): number {
+    return 1 - Math.pow(1 - t, 3)
+  }
+
   animate() {
     this.currentDuration = Date.now() - this.startTime
+    const fadeInDuration = 400 // 400ms for smooth fade in
+    const fadeOutDuration = this.duration / 1.1 // Last portion for fade out
 
-    // Initial speed kick
+    // Initial speed kick with smooth ease-in
     if (this.currentDuration <= 200) {
       this.x += this.initialVelocityX * PARTICLE_INITIAL_SPEED
       this.y += this.initialVelocityY * PARTICLE_INITIAL_SPEED
-      this.alpha += 0.01
-      this.colour = this.getColour(240, 240, 240, 0.9)
+      
+      // Smooth ease-in alpha animation
+      const fadeInProgress = Math.min(this.currentDuration / fadeInDuration, 1)
+      this.alpha = this.easeInCubic(fadeInProgress) * 0.9
+      this.colour = this.getColour(240, 240, 240, this.alpha)
     } else {
       // Normal expansion
       this.x += this.velocityX
@@ -112,14 +126,21 @@ class FireworkParticle implements Particle {
       this.velocityY -= this.velocityY / this.dampening
     }
 
-    if (this.currentDuration >= this.duration + this.duration / 1.1) {
-      // Fade out at the end
-      this.alpha -= 0.02
+    // Smooth fade out with ease-out
+    if (this.currentDuration >= this.duration) {
+      const fadeOutStart = this.duration
+      const fadeOutProgress = Math.min((this.currentDuration - fadeOutStart) / fadeOutDuration, 1)
+      const easedProgress = this.easeOutCubic(fadeOutProgress)
+      
+      // Start from current alpha and fade to 0
+      const startAlpha = this.alpha > 0 ? this.alpha : 1
+      this.alpha = startAlpha * (1 - easedProgress)
       this.colour = this.getColour()
-    } else {
-      // Fade in during expansion
+    } else if (this.currentDuration > fadeInDuration) {
+      // Maintain full brightness during main expansion phase
       if (this.alpha < 1) {
-        this.alpha += 0.03
+        const remainingFadeIn = Math.min((this.currentDuration - 200) / (fadeInDuration - 200), 1)
+        this.alpha = 0.9 + (0.1 * this.easeInCubic(remainingFadeIn))
       }
     }
   }
