@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { AnimatePresence } from "framer-motion"
 import { PackSelector } from "./PackSelector"
 import { PackOpening } from "./PackOpening"
 import { CardReveal } from "./CardReveal"
@@ -60,16 +61,21 @@ export function PackOpeningFlow() {
 
   return (
     <div className="relative w-full min-h-screen">
-      {currentState === 'selection' && (
+      {/* Always show PackSelector for selection and opening states */}
+      {(currentState === 'selection' || currentState === 'opening') && (
         <PackSelector onPackSelect={handlePackSelect} />
       )}
       
-      {currentState === 'opening' && selectedPack && (
-        <PackOpening 
-          pack={selectedPack} 
-          onPackOpened={handlePackOpened}
-        />
-      )}
+      {/* Modal for pack opening */}
+      <AnimatePresence>
+        {currentState === 'opening' && selectedPack && (
+          <PackOpening 
+            pack={selectedPack} 
+            onPackOpened={handlePackOpened}
+            onClose={handleReturnToSelection}
+          />
+        )}
+      </AnimatePresence>
       
       {currentState === 'revealing' && (
         <CardReveal 

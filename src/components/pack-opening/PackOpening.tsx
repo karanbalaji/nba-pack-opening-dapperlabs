@@ -1,12 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Canvas } from "@react-three/fiber"
+import { Canvas, useFrame } from "@react-three/fiber"
 import { OrbitControls, useGLTF, Environment, Float } from "@react-three/drei"
 import { Pack, Card } from "./PackOpeningFlow"
 import { Button } from "@/components/ui/button"
-import { Loader2, Sparkles } from "lucide-react"
+import { Loader2, Sparkles, X } from "lucide-react"
+import { SparklesCore } from "@/components/ui/sparkles"
+import { Group } from "three"
 
 // Mock card data based on available assets
 const MOCK_CARDS: Card[] = [
@@ -68,10 +70,30 @@ function Pack3D({ modelPath, isOpening, onOpenComplete }: {
   onOpenComplete: () => void
 }) {
   const { scene } = useGLTF(modelPath)
+  const meshRef = useRef<Group>(null)
+  const [rotationProgress, setRotationProgress] = useState(0)
+  
+  useFrame((state, delta) => {
+    if (meshRef.current && isOpening) {
+      // Smooth rotation animation when opening
+      const targetRotation = Math.PI * 2 // One full rotation
+      const newProgress = Math.min(rotationProgress + delta * 1.5, 1) // Slightly slower for smoother feel
+      setRotationProgress(newProgress)
+      
+      // Smooth ease-in-out animation using smoothstep function
+      const easeInOut = newProgress * newProgress * (3 - 2 * newProgress)
+      meshRef.current.rotation.y = easeInOut * targetRotation
+      
+      // Add slight wobble effect during opening with ease-in-out
+      const wobbleIntensity = Math.sin(newProgress * Math.PI) // Peak intensity at middle
+      const wobble = Math.sin(newProgress * Math.PI * 6) * 0.08 * wobbleIntensity
+      meshRef.current.rotation.x = wobble
+      meshRef.current.rotation.z = wobble * 0.6
+    }
+  })
   
   useEffect(() => {
     if (isOpening) {
-      // Simulate opening animation completion
       const timer = setTimeout(() => {
         onOpenComplete()
       }, 3000)
@@ -80,19 +102,10 @@ function Pack3D({ modelPath, isOpening, onOpenComplete }: {
   }, [isOpening, onOpenComplete])
 
   return (
-    <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-      <motion.group
-        animate={isOpening ? {
-          rotateY: Math.PI * 2,
-          scale: [1, 1.2, 1]
-        } : {
-          rotateY: 0,
-          scale: 1
-        }}
-        transition={{ duration: 3, ease: "easeInOut" }}
-      >
+    <Float speed={isOpening ? 4 : 2} rotationIntensity={isOpening ? 1 : 0.5} floatIntensity={isOpening ? 1 : 0.5}>
+      <group ref={meshRef}>
         <primitive object={scene} scale={2} />
-      </motion.group>
+      </group>
     </Float>
   )
 }
@@ -100,179 +113,268 @@ function Pack3D({ modelPath, isOpening, onOpenComplete }: {
 interface PackOpeningProps {
   pack: Pack
   onPackOpened: (cards: Card[]) => void
+  onClose: () => void
 }
 
-export function PackOpening({ pack, onPackOpened }: PackOpeningProps) {
+export function PackOpening({ pack, onPackOpened, onClose }: PackOpeningProps) {
   const [phase, setPhase] = useState<'anticipation' | 'opening' | 'complete'>('anticipation')
   const [progress, setProgress] = useState(0)
+  const [progressInterval, setProgressInterval] = useState<NodeJS.Timeout | null>(null)
 
   const handleStartOpening = () => {
     setPhase('opening')
+    setProgress(0)
     
-    // Simulate opening progress
+    // Synchronized progress with 3D animation (3 seconds total)
     const interval = setInterval(() => {
       setProgress(prev => {
-        const newProgress = prev + 2
+        const increment = 100 / (3000 / 50) // 3000ms total, update every 50ms
+        const newProgress = prev + increment
         if (newProgress >= 100) {
           clearInterval(interval)
           return 100
         }
         return newProgress
       })
-    }, 60)
+    }, 50)
+    
+    setProgressInterval(interval)
   }
 
   const handleOpenComplete = () => {
+    // Clear any remaining interval
+    if (progressInterval) {
+      clearInterval(progressInterval)
+      setProgressInterval(null)
+    }
+    
+    setProgress(100)
     setPhase('complete')
+    
+    // Shorter delay before revealing cards for better UX
     setTimeout(() => {
-      // Return random selection of cards from mock data
+      // Return cards based on pack rarity guarantees
       const shuffled = [...MOCK_CARDS].sort(() => 0.5 - Math.random())
-      const selectedCards = shuffled.slice(0, 5)
+      let selectedCards = shuffled.slice(0, 5)
+      
+      // Ensure pack rarity guarantees are met
+      if (pack.rarity === 'legendary') {
+        // Guarantee at least 1 legendary card
+        const legendaryCards = shuffled.filter(card => card.rarity === 'legendary')
+        if (legendaryCards.length > 0 && !selectedCards.some(card => card.rarity === 'legendary')) {
+          selectedCards = [legendaryCards[0], ...selectedCards.slice(1)]
+        }
+      } else if (pack.rarity === 'rare') {
+        // Guarantee at least 1 rare or better card
+        const rareOrBetter = shuffled.filter(card => card.rarity === 'rare' || card.rarity === 'legendary')
+        if (rareOrBetter.length > 0 && !selectedCards.some(card => card.rarity === 'rare' || card.rarity === 'legendary')) {
+          selectedCards = [rareOrBetter[0], ...selectedCards.slice(1)]
+        }
+      }
+      
       onPackOpened(selectedCards)
-    }, 1000)
+    }, 500)
+  }
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (progressInterval) {
+        clearInterval(progressInterval)
+      }
+    }
+  }, [progressInterval])
+
+  const getSparkleColor = () => {
+    switch (pack.rarity) {
+      case 'legendary': return '#fbbf24' // Golden
+      case 'rare': return '#a855f7' // Purple
+      default: return '#3b82f6' // Blue
+    }
   }
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-background/90" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--primary)/5_0%,_transparent_70%)]" />
-      </div>
-
-      {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-8">
-        
-        {/* Pack Info */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-2 md:p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-background border border-border rounded-2xl shadow-2xl w-full max-w-5xl h-[95vh] md:h-[90vh] overflow-hidden relative flex flex-col"
+      >
+        {/* Close Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-3 right-3 md:top-4 md:right-4 z-10 h-8 w-8 p-0"
+          onClick={onClose}
         >
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">{pack.name}</h1>
-          <p className="text-xl text-muted-foreground mb-2">{pack.description}</p>
-          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="h-4 w-4 text-yellow-500" />
-            <span>5 premium cards await</span>
-          </div>
-        </motion.div>
+          <X className="h-4 w-4" />
+        </Button>
 
-        {/* 3D Pack Display */}
-        <div className="w-full max-w-2xl aspect-square mb-8">
-          <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
-            <ambientLight intensity={0.5} />
-            <pointLight position={[10, 10, 10]} />
-            <Environment preset="studio" />
-            
-            <Pack3D 
-              modelPath={pack.model3D}
-              isOpening={phase === 'opening'}
-              onOpenComplete={handleOpenComplete}
-            />
-            
-            <OrbitControls 
-              enableZoom={false}
-              enablePan={false}
-              autoRotate={phase === 'anticipation'}
-              autoRotateSpeed={2}
-            />
-          </Canvas>
+        {/* Animated Background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-background/90" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--primary)/5_0%,_transparent_70%)]" />
         </div>
 
-        {/* Controls */}
-        <AnimatePresence mode="wait">
-          {phase === 'anticipation' && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="text-center"
-            >
-              <Button 
-                size="lg"
-                className="text-xl px-12 py-6"
-                onClick={handleStartOpening}
-              >
-                <Sparkles className="mr-2 h-5 w-5" />
-                Open Pack
-              </Button>
-              <p className="text-sm text-muted-foreground mt-4">
-                Click to reveal your cards
-              </p>
-            </motion.div>
-          )}
-
+        {/* Sparkles Effect - Only show during opening phase */}
+        <AnimatePresence>
           {phase === 'opening' && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="text-center space-y-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 pointer-events-none z-[5]"
             >
-              <div className="flex items-center justify-center gap-2">
-                <Loader2 className="h-6 w-6 animate-spin" />
-                <span className="text-lg">Opening pack...</span>
-              </div>
-              
-              {/* Progress Bar */}
-              <div className="w-80 max-w-full mx-auto">
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <motion.div 
-                    className="h-full bg-primary"
-                    initial={{ width: "0%" }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ ease: "easeOut" }}
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {progress}% complete
-                </p>
-              </div>
-            </motion.div>
-          )}
-
-          {phase === 'complete' && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center"
-            >
-              <div className="text-2xl font-bold text-green-500 mb-2">Pack Opened!</div>
-              <div className="text-muted-foreground">Revealing your cards...</div>
+              <SparklesCore
+                id="pack-opening-sparkles"
+                background="transparent"
+                minSize={1}
+                maxSize={4}
+                particleDensity={100}
+                className="w-full h-full"
+                particleColor={getSparkleColor()}
+                speed={3}
+              />
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Particle Effects */}
-        {phase === 'opening' && (
-          <div className="absolute inset-0 pointer-events-none">
-            {[...Array(20)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-2 h-2 bg-primary/60 rounded-full"
-                initial={{
-                  x: "50vw",
-                  y: "50vh",
-                  scale: 0,
-                  opacity: 1
-                }}
-                animate={{
-                  x: Math.random() * window.innerWidth,
-                  y: Math.random() * window.innerHeight,
-                  scale: [0, 1, 0],
-                  opacity: [1, 0.8, 0]
-                }}
-                transition={{
-                  duration: 2,
-                  delay: Math.random() * 2,
-                  repeat: Infinity,
-                  ease: "easeOut"
-                }}
-              />
-            ))}
+        {/* Main Content - Using flex layout for better control */}
+        <div className="relative z-10 flex flex-col h-full">
+          
+          {/* Header Section */}
+          <div className="flex-shrink-0 text-center pt-6 md:pt-8 px-4 md:px-8 pb-3 md:pb-4">
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <h1 className="text-2xl md:text-3xl lg:text-5xl font-bold mb-2 md:mb-3">{pack.name}</h1>
+              <p className="text-base md:text-lg lg:text-xl text-muted-foreground mb-2">{pack.description}</p>
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Sparkles className="h-4 w-4 text-yellow-500" />
+                <span>5 premium cards await</span>
+              </div>
+            </motion.div>
           </div>
-        )}
-      </div>
-    </div>
+
+          {/* 3D Pack Display - Flexible height that adapts to available space */}
+          <div className="flex-1 flex items-center justify-center px-4 md:px-8 py-2 md:py-4 min-h-0">
+            <div className="w-full max-w-sm md:max-w-md h-full max-h-[300px] md:max-h-[400px] min-h-[250px] md:min-h-[300px]">
+              <Canvas 
+                camera={{ position: [0, 0, 5], fov: 50 }}
+                className="w-full h-full"
+              >
+                <ambientLight intensity={0.5} />
+                <pointLight position={[10, 10, 10]} />
+                <Environment preset="studio" />
+                
+                <Pack3D 
+                  modelPath={pack.model3D}
+                  isOpening={phase === 'opening'}
+                  onOpenComplete={handleOpenComplete}
+                />
+                
+                <OrbitControls 
+                  enableZoom={false}
+                  enablePan={false}
+                  autoRotate={phase === 'anticipation'}
+                  autoRotateSpeed={2}
+                />
+              </Canvas>
+            </div>
+          </div>
+
+          {/* Controls Section */}
+          <div className="flex-shrink-0 px-4 md:px-8 pb-6 md:pb-8">
+            <AnimatePresence mode="wait">
+              {phase === 'anticipation' && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="text-center"
+                >
+                  <Button 
+                    size="lg"
+                    className="text-xl px-12 py-6"
+                    onClick={handleStartOpening}
+                  >
+                    <Sparkles className="mr-2 h-5 w-5" />
+                    Open Pack
+                  </Button>
+                  <p className="text-sm text-muted-foreground mt-4">
+                    Click to reveal your cards
+                  </p>
+                </motion.div>
+              )}
+
+              {phase === 'opening' && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="text-center space-y-4"
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <span className="text-lg font-medium">Opening pack...</span>
+                  </div>
+                  
+                  {/* Enhanced Progress Bar */}
+                  <div className="w-80 max-w-full mx-auto">
+                    <div className="h-3 bg-muted/50 rounded-full overflow-hidden border border-border">
+                      <motion.div 
+                        className="h-full bg-gradient-to-r from-primary to-primary/80 relative"
+                        initial={{ width: "0%" }}
+                        animate={{ width: `${Math.round(progress)}%` }}
+                        transition={{ ease: "easeOut", duration: 0.1 }}
+                      >
+                        {/* Progress glow effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
+                      </motion.div>
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <p className="text-sm text-muted-foreground">
+                        {Math.round(progress)}% complete
+                      </p>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Sparkles className="h-3 w-3" />
+                        <span>Magic happening...</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Progress stages */}
+                  <div className="text-xs text-muted-foreground">
+                    {progress < 30 && "Unwrapping pack..."}
+                    {progress >= 30 && progress < 60 && "Revealing contents..."}
+                    {progress >= 60 && progress < 90 && "Preparing cards..."}
+                    {progress >= 90 && "Almost ready!"}
+                  </div>
+                </motion.div>
+              )}
+
+              {phase === 'complete' && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center"
+                >
+                  <div className="text-2xl font-bold text-green-500 mb-2">Pack Opened!</div>
+                  <div className="text-muted-foreground">Revealing your cards...</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   )
 } 

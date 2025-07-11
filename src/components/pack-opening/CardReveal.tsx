@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "./PackOpeningFlow"
-import { Play, Pause, RotateCcw, Sparkles, Star } from "lucide-react"
+import { Sparkles, Star } from "lucide-react"
 
 interface CardRevealProps {
   cards: Card[]
@@ -18,9 +18,6 @@ function PlayerCard({ card, isRevealed, onReveal }: {
   isRevealed: boolean
   onReveal: () => void 
 }) {
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false)
-  const [showVideo, setShowVideo] = useState(false)
-
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
       case 'legendary': return 'from-yellow-400 to-orange-500'
@@ -67,52 +64,52 @@ function PlayerCard({ card, isRevealed, onReveal }: {
             </Badge>
           </CardItem>
 
-          {/* Player Image/Video */}
+          {/* Player Video/Image - Picture-in-Picture Style */}
           <CardItem translateZ="50" className="w-full h-48 mb-4 relative overflow-hidden rounded-lg">
-            <AnimatePresence mode="wait">
-              {showVideo ? (
-                <motion.video
-                  key="video"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  src={card.video}
-                  autoPlay={isVideoPlaying}
-                  loop
-                  muted
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <motion.img
-                  key="image"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  src={card.headshot}
-                  alt={card.playerName}
-                  className="w-full h-full object-cover"
-                />
-              )}
-            </AnimatePresence>
+            {/* Main Video Content */}
+            <motion.video
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              src={card.video}
+              autoPlay
+              loop
+              muted
+              className="w-full h-full object-cover"
+            />
+            
+            {/* Headshot Picture-in-Picture Overlay */}
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
+              className="absolute top-3 right-3 w-16 h-16 rounded-full overflow-hidden border-2 border-white/80 shadow-lg backdrop-blur-sm"
+            >
+              <img
+                src={card.headshot}
+                alt={card.playerName}
+                className="w-full h-full object-cover"
+              />
+              {/* Subtle glow effect based on rarity */}
+              <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${getRarityColor(card.rarity)} opacity-20`} />
+            </motion.div>
 
-            {/* Video Controls Overlay */}
-            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center">
-              <Button
-                size="sm"
-                variant="secondary"
-                className="bg-black/50 hover:bg-black/70"
-                onClick={() => {
-                  setShowVideo(!showVideo)
-                  setIsVideoPlaying(!showVideo)
-                }}
-              >
-                {showVideo ? (
-                  <RotateCcw className="h-4 w-4" />
-                ) : (
-                  <Play className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+            {/* Video Play Indicator */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1"
+            >
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <span className="text-white text-xs font-medium">LIVE</span>
+            </motion.div>
+
+            {/* Rarity Shimmer Effect */}
+            {card.rarity !== 'common' && (
+              <div className="absolute inset-0 pointer-events-none">
+                <div className={`absolute inset-0 bg-gradient-to-br ${getRarityColor(card.rarity)} opacity-10 animate-pulse`} />
+              </div>
+            )}
           </CardItem>
 
           {/* Player Info */}
@@ -167,32 +164,51 @@ function PlayerCard({ card, isRevealed, onReveal }: {
 
 export function CardReveal({ cards, onRevealComplete }: CardRevealProps) {
   const [revealedIndices, setRevealedIndices] = useState<number[]>([])
-  const [currentRevealIndex, setCurrentRevealIndex] = useState(0)
+  const [autoRevealEnabled, setAutoRevealEnabled] = useState(true)
 
-  const handleRevealCard = (index: number) => {
-    setRevealedIndices(prev => [...prev, index])
-    
-    // Auto-advance to next card after a delay
-    setTimeout(() => {
-      if (index < cards.length - 1) {
-        setCurrentRevealIndex(index + 1)
+  const handleRevealCard = useCallback((index: number) => {
+    setRevealedIndices(prev => {
+      if (prev.includes(index)) return prev
+      
+      const newIndices = [...prev, index]
+      
+      // Auto-advance to next card after a delay (only if auto-reveal is enabled)
+      if (autoRevealEnabled && index < cards.length - 1) {
+        setTimeout(() => {
+          handleRevealCard(index + 1)
+        }, 1200) // Reduced delay for better pacing
       }
-    }, 1500)
-  }
+      
+      return newIndices
+    })
+  }, [autoRevealEnabled, cards.length])
 
   const handleRevealAll = () => {
+    setAutoRevealEnabled(false) // Disable auto-reveal when manually revealing all
     const allIndices = cards.map((_, i) => i)
     setRevealedIndices(allIndices)
-    setCurrentRevealIndex(cards.length)
   }
 
   const allRevealed = revealedIndices.length === cards.length
 
+  // Auto-reveal first card after a short delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (revealedIndices.length === 0) {
+        handleRevealCard(0)
+      }
+    }, 1000)
+    
+    return () => clearTimeout(timer)
+  }, [handleRevealCard, revealedIndices.length])
+
   useEffect(() => {
     if (allRevealed) {
-      setTimeout(() => {
-        onRevealComplete()
-      }, 2000)
+      // Remove auto-advance - let user decide when to proceed
+      // const timer = setTimeout(() => {
+      //   onRevealComplete()
+      // }, 2500)
+      // return () => clearTimeout(timer)
     }
   }, [allRevealed, onRevealComplete])
 
@@ -218,12 +234,33 @@ export function CardReveal({ cards, onRevealComplete }: CardRevealProps) {
             {revealedIndices.length} of {cards.length} revealed
           </p>
           
-          {/* Reveal All Button */}
-          {!allRevealed && revealedIndices.length > 0 && (
-            <Button variant="outline" onClick={handleRevealAll} className="mb-4">
-              Reveal All Cards
-            </Button>
-          )}
+          {/* Control Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            {/* Reveal All Button */}
+            {!allRevealed && revealedIndices.length > 0 && (
+              <Button variant="outline" onClick={handleRevealAll} className="">
+                Reveal All Cards
+              </Button>
+            )}
+            
+            {/* Continue Button - Only show when all cards are revealed */}
+            {allRevealed && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Button 
+                  size="lg" 
+                  onClick={onRevealComplete}
+                  className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary gap-2"
+                >
+                  <Sparkles className="h-5 w-5" />
+                  View Collection Summary
+                </Button>
+              </motion.div>
+            )}
+          </div>
         </motion.div>
       </div>
 
@@ -241,23 +278,24 @@ export function CardReveal({ cards, onRevealComplete }: CardRevealProps) {
         </div>
       </div>
 
-      {/* Completion Message */}
+      {/* Completion Message - Remove auto-advance overlay */}
       {allRevealed && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-20"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="relative z-10 text-center py-8"
         >
-          <div className="text-center">
+          <div className="max-w-md mx-auto">
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
               className="mb-4"
             >
-              <Sparkles className="h-16 w-16 mx-auto text-yellow-500" />
+              <Sparkles className="h-12 w-12 mx-auto text-yellow-500" />
             </motion.div>
-            <h2 className="text-3xl font-bold mb-2">Pack Complete!</h2>
-            <p className="text-muted-foreground">Processing your collection...</p>
+            <h2 className="text-2xl font-bold mb-2">All Cards Revealed!</h2>
+            <p className="text-muted-foreground">Check out your amazing collection above, then view the summary when ready.</p>
           </div>
         </motion.div>
       )}

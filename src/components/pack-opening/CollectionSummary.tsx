@@ -123,13 +123,41 @@ export function CollectionSummary({ cards, pack, onReturnToSelection }: Collecti
                 <CardDescription>Your highest rarity card from this pack</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-center gap-6">
-                  <img 
-                    src={bestCard.headshot}
-                    alt={bestCard.playerName}
-                    className="w-24 h-24 rounded-full object-cover border-4 border-primary/20"
-                  />
-                  <div className="text-center">
+                <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+                  {/* Video + Headshot Picture-in-Picture */}
+                  <div className="relative w-48 h-32 rounded-lg overflow-hidden">
+                    {/* Main Video Content */}
+                    <video
+                      src={bestCard.video}
+                      autoPlay
+                      loop
+                      muted
+                      className="w-full h-full object-cover"
+                    />
+                    
+                    {/* Headshot Picture-in-Picture Overlay */}
+                    <div className="absolute top-2 right-2 w-12 h-12 rounded-full overflow-hidden border-2 border-white/80 shadow-lg">
+                      <img
+                        src={bestCard.headshot}
+                        alt={bestCard.playerName}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Rarity glow effect */}
+                      <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${
+                        bestCard.rarity === 'legendary' ? 'from-yellow-400 to-orange-500' :
+                        bestCard.rarity === 'rare' ? 'from-purple-400 to-pink-500' :
+                        'from-blue-400 to-cyan-500'
+                      } opacity-20`} />
+                    </div>
+
+                    {/* Video Play Indicator */}
+                    <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
+                      <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                      <span className="text-white text-xs font-medium">LIVE</span>
+                    </div>
+                  </div>
+                  
+                  <div className="text-center md:text-left">
                     <h3 className="text-3xl font-bold mb-2">{bestCard.playerName}</h3>
                     <Badge className={
                       bestCard.rarity === 'legendary' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-400/50' :
@@ -139,6 +167,11 @@ export function CollectionSummary({ cards, pack, onReturnToSelection }: Collecti
                       {bestCard.rarity.toUpperCase()}
                     </Badge>
                     <p className="text-muted-foreground mt-2">{bestCard.team} • {bestCard.position}</p>
+                    <div className="flex gap-4 mt-3 text-sm">
+                      <div><span className="text-muted-foreground">PPG:</span> <span className="font-semibold">{bestCard.stats.points}</span></div>
+                      <div><span className="text-muted-foreground">APG:</span> <span className="font-semibold">{bestCard.stats.assists}</span></div>
+                      <div><span className="text-muted-foreground">RPG:</span> <span className="font-semibold">{bestCard.stats.rebounds}</span></div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -164,16 +197,30 @@ export function CollectionSummary({ cards, pack, onReturnToSelection }: Collecti
               >
                 <Card className="group overflow-hidden hover:scale-105 transition-transform duration-300">
                   <div className="aspect-square relative">
-                    <img 
-                      src={card.headshot}
-                      alt={card.playerName}
+                    {/* Main Video Content */}
+                    <video 
+                      src={card.video}
+                      autoPlay
+                      loop
+                      muted
                       className="w-full h-full object-cover"
                     />
+                    
+                    {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    
+                    {/* Headshot Picture-in-Picture */}
+                    <div className="absolute top-2 right-2 w-8 h-8 rounded-full overflow-hidden border border-white/60 shadow-md">
+                      <img 
+                        src={card.headshot}
+                        alt={card.playerName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                     
                     {/* Rarity Badge */}
                     <Badge 
-                      className={`absolute top-2 right-2 text-xs ${
+                      className={`absolute top-2 left-2 text-xs ${
                         card.rarity === 'legendary' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-400/50' :
                         card.rarity === 'rare' ? 'bg-purple-500/20 text-purple-300 border-purple-400/50' :
                         'bg-blue-500/20 text-blue-300 border-blue-400/50'
@@ -186,6 +233,11 @@ export function CollectionSummary({ cards, pack, onReturnToSelection }: Collecti
                     <div className="absolute bottom-2 left-2 right-2 text-white">
                       <h4 className="font-semibold text-sm truncate">{card.playerName}</h4>
                       <p className="text-xs opacity-80">{card.team}</p>
+                    </div>
+
+                    {/* Video Indicator */}
+                    <div className="absolute bottom-2 right-2 bg-black/40 rounded-full p-1">
+                      <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                     </div>
                   </div>
                 </Card>

@@ -1,5 +1,6 @@
 "use client"
 
+import { useRef, useState } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -7,6 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Pack } from "./PackOpeningFlow"
 import { ThemeSwitcherWrapper } from "@/components/theme-switcher-wrapper"
 import { Sparkles } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { SparklesCore } from "@/components/ui/sparkles"
 
 const AVAILABLE_PACKS: Pack[] = [
   {
@@ -29,11 +32,90 @@ const AVAILABLE_PACKS: Pack[] = [
   }
 ]
 
+// 3D Image Component for pack images
+function Image3D({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const imageRef = useRef<HTMLImageElement>(null)
+  const [isMouseEntered, setIsMouseEntered] = useState(false)
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current || !imageRef.current) return
+    
+    const { left, top, width, height } = containerRef.current.getBoundingClientRect()
+    const x = (e.clientX - left - width / 2) / 20  // More sensitive rotation
+    const y = (e.clientY - top - height / 2) / 20
+    
+    // Apply rotation to container and scale + translateZ to image
+    containerRef.current.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`
+    imageRef.current.style.transform = `translateZ(40px) scale(1.1)` // Pop out effect
+  }
+
+  const handleMouseEnter = () => {
+    setIsMouseEntered(true)
+  }
+
+  const handleMouseLeave = () => {
+    if (!containerRef.current || !imageRef.current) return
+    setIsMouseEntered(false)
+    containerRef.current.style.transform = `rotateY(0deg) rotateX(0deg)`
+    imageRef.current.style.transform = `translateZ(0px) scale(1)`
+  }
+
+  return (
+    <div
+      className="w-full h-full"
+      style={{ 
+        perspective: "1200px",
+        transformStyle: "preserve-3d"
+      }}
+    >
+      <div
+        ref={containerRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className={cn("w-full h-full transition-all duration-300 ease-out", className)}
+        style={{ 
+          transformStyle: "preserve-3d",
+          transformOrigin: "center center"
+        }}
+      >
+        <img
+          ref={imageRef}
+          src={src}
+          alt={alt}
+          className="w-full h-full object-cover transition-all duration-300 ease-out"
+          style={{
+            transformStyle: "preserve-3d",
+            backfaceVisibility: "hidden",
+            filter: isMouseEntered ? "brightness(1.1)" : "brightness(1)",
+            boxShadow: isMouseEntered 
+              ? "0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)" 
+              : "none"
+          }}
+        />
+        
+        {/* Subtle glow effect on hover */}
+        {isMouseEntered && (
+          <div 
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.05) 100%)",
+              transform: "translateZ(2px)"
+            }}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
 interface PackSelectorProps {
   onPackSelect: (pack: Pack) => void
 }
 
 export function PackSelector({ onPackSelect }: PackSelectorProps) {
+
   return (
     <div className="bg-background">
       {/* Header */}
@@ -79,28 +161,45 @@ export function PackSelector({ onPackSelect }: PackSelectorProps) {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.2 }}
+              className="group"
             >
-              <Card className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
-                <div className="aspect-[4/3] relative overflow-hidden">
-                  <motion.img
-                    src={pack.image}
-                    alt={pack.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    whileHover={{ scale: 1.02 }}
+              <div className="relative">
+                {/* Sparkles Border Effect */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                  <SparklesCore
+                    id={`sparkles-${pack.id}`}
+                    background="transparent"
+                    minSize={0.6}
+                    maxSize={1.4}
+                    particleDensity={50}
+                    className="w-full h-full absolute inset-0"
+                    particleColor={
+                      pack.rarity === 'legendary' ? '#fbbf24' :
+                      pack.rarity === 'rare' ? '#a855f7' : '#3b82f6'
+                    }
+                    speed={0.5}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  
-                  {/* Rarity Badge */}
-                  <Badge 
-                    className={`absolute top-4 right-4 ${
-                      pack.rarity === 'legendary' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-400/50' :
-                      pack.rarity === 'rare' ? 'bg-purple-500/20 text-purple-300 border-purple-400/50' :
-                      'bg-blue-500/20 text-blue-300 border-blue-400/50'
-                    }`}
-                  >
-                    {pack.rarity.toUpperCase()}
-                  </Badge>
                 </div>
+                
+                <Card className="relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-xl z-10">
+                  <div className="aspect-[4/3] relative overflow-hidden">
+                    <Image3D
+                      src={pack.image}
+                      alt={pack.name}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                    
+                    {/* Rarity Badge */}
+                    <Badge 
+                      className={`absolute top-4 right-4 ${
+                        pack.rarity === 'legendary' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-400/50' :
+                        pack.rarity === 'rare' ? 'bg-purple-500/20 text-purple-300 border-purple-400/50' :
+                        'bg-blue-500/20 text-blue-300 border-blue-400/50'
+                      }`}
+                    >
+                      {pack.rarity.toUpperCase()}
+                    </Badge>
+                  </div>
 
                 <CardHeader className="pb-3">
                   <CardTitle className="text-xl">{pack.name}</CardTitle>
@@ -137,6 +236,7 @@ export function PackSelector({ onPackSelect }: PackSelectorProps) {
                   </motion.div>
                 </CardContent>
               </Card>
+              </div>
             </motion.div>
           ))}
         </div>
