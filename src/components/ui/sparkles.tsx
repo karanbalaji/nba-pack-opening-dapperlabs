@@ -80,7 +80,10 @@ export const SparklesCore = (props: ParticlesProps) => {
                   enable: false,
                   mode: "repulse",
                 },
-                resize: true,
+                resize: {
+                  enable: true,
+                  delay: 0.5
+                },
               },
               modes: {
                 push: {
@@ -205,7 +208,7 @@ export const SparklesCore = (props: ParticlesProps) => {
                 size: false,
                 speed: {
                   min: 0.1,
-                  max: 1,
+                  max: 0.3,
                 },
                 spin: {
                   acceleration: 0,
@@ -240,7 +243,7 @@ export const SparklesCore = (props: ParticlesProps) => {
                 animation: {
                   count: 0,
                   enable: true,
-                  speed: speed || 4,
+                  speed: speed || 1,
                   decay: 0,
                   delay: 0,
                   sync: false,

@@ -121,15 +121,12 @@ export function PackSelector({ onPackSelect }: PackSelectorProps) {
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center">
             <img 
               src="/media/top-shot-logo.png" 
               alt="NBA Top Shot" 
-              className="h-6 w-auto"
+              className="h-20 w-auto"
             />
-            <div>
-              <h1 className="text-xl font-bold">Pack Opening</h1>
-            </div>
           </div>
           <ThemeSwitcherWrapper />
         </div>

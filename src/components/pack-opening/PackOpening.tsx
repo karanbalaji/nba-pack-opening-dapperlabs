@@ -7,7 +7,7 @@ import { OrbitControls, useGLTF, Environment, Float } from "@react-three/drei"
 import { Pack, Card } from "./PackOpeningFlow"
 import { Button } from "@/components/ui/button"
 import { Loader2, Sparkles, X } from "lucide-react"
-import { SparklesCore } from "@/components/ui/sparkles"
+import { Fireworks } from "@/components/ui/fireworks"
 import { Group } from "three"
 
 // Mock card data based on available assets
@@ -120,8 +120,18 @@ export function PackOpening({ pack, onPackOpened, onClose }: PackOpeningProps) {
   const [phase, setPhase] = useState<'anticipation' | 'opening' | 'complete'>('anticipation')
   const [progress, setProgress] = useState(0)
   const [progressInterval, setProgressInterval] = useState<NodeJS.Timeout | null>(null)
+  const [showFireworks, setShowFireworks] = useState(false)
+
 
   const handleStartOpening = () => {
+    // Trigger fireworks effect
+    setShowFireworks(true)
+    
+    // Hide fireworks after 4 seconds
+    setTimeout(() => {
+      setShowFireworks(false)
+    }, 4000)
+    
     setPhase('opening')
     setProgress(0)
     
@@ -147,6 +157,9 @@ export function PackOpening({ pack, onPackOpened, onClose }: PackOpeningProps) {
       clearInterval(progressInterval)
       setProgressInterval(null)
     }
+    
+    // Hide fireworks
+    setShowFireworks(false)
     
     setProgress(100)
     setPhase('complete')
@@ -185,13 +198,7 @@ export function PackOpening({ pack, onPackOpened, onClose }: PackOpeningProps) {
     }
   }, [progressInterval])
 
-  const getSparkleColor = () => {
-    switch (pack.rarity) {
-      case 'legendary': return '#fbbf24' // Golden
-      case 'rare': return '#a855f7' // Purple
-      default: return '#3b82f6' // Blue
-    }
-  }
+
 
   return (
     <motion.div 
@@ -223,28 +230,12 @@ export function PackOpening({ pack, onPackOpened, onClose }: PackOpeningProps) {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--primary)/5_0%,_transparent_70%)]" />
         </div>
 
-        {/* Sparkles Effect - Only show during opening phase */}
-        <AnimatePresence>
-          {phase === 'opening' && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 pointer-events-none z-[5]"
-            >
-              <SparklesCore
-                id="pack-opening-sparkles"
-                background="transparent"
-                minSize={1}
-                maxSize={4}
-                particleDensity={100}
-                className="w-full h-full"
-                particleColor={getSparkleColor()}
-                speed={3}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Fireworks Effect */}
+        {showFireworks && (
+          <Fireworks 
+            className="absolute inset-0 pointer-events-none"
+          />
+        )}
 
         {/* Main Content - Using flex layout for better control */}
         <div className="relative z-10 flex flex-col h-full">
@@ -266,9 +257,9 @@ export function PackOpening({ pack, onPackOpened, onClose }: PackOpeningProps) {
 
           {/* 3D Pack Display - Flexible height that adapts to available space */}
           <div className="flex-1 flex items-center justify-center px-4 md:px-8 py-2 md:py-4 min-h-0">
-            <div className="w-full max-w-sm md:max-w-md h-full max-h-[300px] md:max-h-[400px] min-h-[250px] md:min-h-[300px]">
+            <div className="w-full max-w-lg md:max-w-xl h-full max-h-[400px] md:max-h-[500px] min-h-[350px] md:min-h-[450px]">
               <Canvas 
-                camera={{ position: [0, 0, 5], fov: 50 }}
+                camera={{ position: [0, 0, 7], fov: 60 }}
                 className="w-full h-full"
               >
                 <ambientLight intensity={0.5} />

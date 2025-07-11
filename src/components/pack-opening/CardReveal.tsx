@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card"
+import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "./PackOpeningFlow"
@@ -28,9 +27,9 @@ function PlayerCard({ card, isRevealed, onReveal }: {
 
   const getRarityBadgeColor = (rarity: string) => {
     switch (rarity) {
-      case 'legendary': return 'bg-yellow-500/20 text-yellow-300 border-yellow-400/50'
-      case 'rare': return 'bg-purple-500/20 text-purple-300 border-purple-400/50'
-      default: return 'bg-blue-500/20 text-blue-300 border-blue-400/50'
+      case 'legendary': return 'bg-yellow-500/90 text-yellow-100 border-yellow-400'
+      case 'rare': return 'bg-purple-500/90 text-purple-100 border-purple-400'
+      default: return 'bg-blue-500/90 text-blue-100 border-blue-400'
     }
   }
 
@@ -45,119 +44,113 @@ function PlayerCard({ card, isRevealed, onReveal }: {
       } : {}}
       className="w-full"
     >
-      <CardContainer className="inter-var">
-        <CardBody className="bg-card relative group/card hover:shadow-2xl hover:shadow-primary/10 border-2 border-border rounded-xl p-6 w-full h-96">
-          {/* Rarity Glow Effect */}
-          <div className={`absolute inset-0 bg-gradient-to-br ${getRarityColor(card.rarity)} opacity-5 rounded-xl`} />
-          
-          {/* Rarity Badge */}
-          <CardItem translateZ="100" className="absolute top-4 right-4 z-10">
-            <Badge className={getRarityBadgeColor(card.rarity)}>
-              {card.rarity.toUpperCase()}
-            </Badge>
-          </CardItem>
+      {/* Card Container - Clean, no 3D effects */}
+      <div className="relative bg-card border-2 border-border rounded-xl overflow-hidden w-full h-[500px] group hover:border-primary/50 transition-all duration-300">
+        {/* Video Background - Full Card */}
+        <motion.video
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          src={card.video}
+          autoPlay
+          loop
+          muted
+          className="absolute inset-0 w-full h-full object-cover"
+        />
 
-          {/* Team Badge */}
-          <CardItem translateZ="80" className="absolute top-4 left-4 z-10">
-            <Badge variant="outline" className="text-xs">
-              {card.team} • {card.position}
-            </Badge>
-          </CardItem>
+        {/* Dark Overlay for Better Text Readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
 
-          {/* Player Video/Image - Picture-in-Picture Style */}
-          <CardItem translateZ="50" className="w-full h-48 mb-4 relative overflow-hidden rounded-lg">
-            {/* Main Video Content */}
-            <motion.video
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              src={card.video}
-              autoPlay
-              loop
-              muted
-              className="w-full h-full object-cover"
-            />
-            
-            {/* Headshot Picture-in-Picture Overlay */}
+        {/* Rarity Glow Effect */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${getRarityColor(card.rarity)} opacity-10`} />
+
+        {/* Top Row - Badges */}
+        <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10">
+          <Badge variant="outline" className="bg-black/70 text-white border-white/30 backdrop-blur-sm">
+            {card.team} • {card.position}
+          </Badge>
+          <Badge className={`${getRarityBadgeColor(card.rarity)} backdrop-blur-sm border`}>
+            {card.rarity.toUpperCase()}
+          </Badge>
+        </div>
+
+        {/* Live Indicator */}
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-2">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+            <span className="text-white text-sm font-medium">LIVE</span>
+          </div>
+        </div>
+
+        {/* Player Info - Bottom Section */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+          {/* Player Name & Profile Picture */}
+          <div className="flex items-center gap-4 mb-6">
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.4 }}
-              className="absolute top-3 right-3 w-16 h-16 rounded-full overflow-hidden border-2 border-white/80 shadow-lg backdrop-blur-sm"
+              className="w-16 h-16 rounded-full overflow-hidden border-3 border-white/90 shadow-xl flex-shrink-0"
             >
               <img
                 src={card.headshot}
                 alt={card.playerName}
                 className="w-full h-full object-cover"
               />
-              {/* Subtle glow effect based on rarity */}
-              <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${getRarityColor(card.rarity)} opacity-20`} />
             </motion.div>
+            
+            <div className="flex-1 min-w-0">
+              <h3 className="text-2xl font-bold text-white leading-tight mb-1">{card.playerName}</h3>
+              <p className="text-white/80 text-sm">{card.team} • {card.position}</p>
+            </div>
+          </div>
 
-            {/* Video Play Indicator */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1"
-            >
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-white text-xs font-medium">LIVE</span>
-            </motion.div>
-
-            {/* Rarity Shimmer Effect */}
-            {card.rarity !== 'common' && (
-              <div className="absolute inset-0 pointer-events-none">
-                <div className={`absolute inset-0 bg-gradient-to-br ${getRarityColor(card.rarity)} opacity-10 animate-pulse`} />
+          {/* Stats Row */}
+          <div className="bg-black/50 backdrop-blur-sm rounded-lg p-4 mb-4">
+            <div className="grid grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white">{card.stats.points}</div>
+                <div className="text-white/70 text-xs font-medium mt-1">PPG</div>
               </div>
-            )}
-          </CardItem>
-
-          {/* Player Info */}
-          <CardItem translateZ="60" className="text-center mb-4">
-            <h3 className="text-xl font-bold">{card.playerName}</h3>
-            <p className="text-muted-foreground text-sm">{card.team} • {card.position}</p>
-          </CardItem>
-
-          {/* Stats */}
-          <CardItem translateZ="40" className="w-full">
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="space-y-1">
-                <div className="text-lg font-bold">{card.stats.points}</div>
-                <div className="text-xs text-muted-foreground">PPG</div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white">{card.stats.assists}</div>
+                <div className="text-white/70 text-xs font-medium mt-1">APG</div>
               </div>
-              <div className="space-y-1">
-                <div className="text-lg font-bold">{card.stats.assists}</div>
-                <div className="text-xs text-muted-foreground">APG</div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-lg font-bold">{card.stats.rebounds}</div>
-                <div className="text-xs text-muted-foreground">RPG</div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white">{card.stats.rebounds}</div>
+                <div className="text-white/70 text-xs font-medium mt-1">RPG</div>
               </div>
             </div>
-          </CardItem>
+          </div>
 
           {/* Rarity Stars */}
           {card.rarity !== 'common' && (
-            <CardItem translateZ="30" className="absolute bottom-4 left-4">
+            <div className="flex justify-center">
               <div className="flex gap-1">
                 {[...Array(card.rarity === 'legendary' ? 3 : 2)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400 drop-shadow-lg" />
                 ))}
               </div>
-            </CardItem>
+            </div>
           )}
+        </div>
 
-          {/* Reveal Button */}
-          {!isRevealed && (
-            <CardItem translateZ="100" className="absolute inset-0 bg-card/95 backdrop-blur-sm flex items-center justify-center">
-              <Button onClick={onReveal} size="lg" className="gap-2">
-                <Sparkles className="h-5 w-5" />
-                Reveal Card
-              </Button>
-            </CardItem>
-          )}
-        </CardBody>
-      </CardContainer>
+        {/* Rarity Shimmer Effect */}
+        {card.rarity !== 'common' && (
+          <div className="absolute inset-0 pointer-events-none">
+            <div className={`absolute inset-0 bg-gradient-to-br ${getRarityColor(card.rarity)} opacity-5 animate-pulse`} />
+          </div>
+        )}
+
+        {/* Reveal Button Overlay */}
+        {!isRevealed && (
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-20">
+            <Button onClick={onReveal} size="lg" className="gap-2 text-lg px-8 py-4">
+              <Sparkles className="h-6 w-6" />
+              Reveal Card
+            </Button>
+          </div>
+        )}
+      </div>
     </motion.div>
   )
 }
@@ -266,7 +259,7 @@ export function CardReveal({ cards, onRevealComplete }: CardRevealProps) {
 
       {/* Cards Grid */}
       <div className="relative z-10 container mx-auto px-4 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-7xl mx-auto">
           {cards.map((card, index) => (
             <PlayerCard
               key={card.id}
