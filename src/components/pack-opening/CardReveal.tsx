@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "./PackOpeningFlow"
-import { Sparkles, Star } from "lucide-react"
+import { Sparkles, Star, X } from "lucide-react"
 
 interface CardRevealProps {
   cards: Card[]
@@ -45,7 +45,7 @@ function PlayerCard({ card, isRevealed, onReveal }: {
       className="w-full"
     >
       {/* Card Container - Clean, no 3D effects */}
-      <div className="relative bg-card border-2 border-border rounded-xl overflow-hidden w-full h-[500px] group hover:border-primary/50 transition-all duration-300">
+      <div className="relative bg-card border-2 border-border rounded-xl overflow-hidden w-full h-[400px] sm:h-[500px] group hover:border-primary/50 transition-all duration-300">
         {/* Video Background - Full Card */}
         <motion.video
           initial={{ opacity: 0 }}
@@ -82,14 +82,14 @@ function PlayerCard({ card, isRevealed, onReveal }: {
         </div>
 
         {/* Player Info - Bottom Section */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 z-10">
           {/* Player Name & Profile Picture */}
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.4 }}
-              className="w-16 h-16 rounded-full overflow-hidden border-3 border-white/90 shadow-xl flex-shrink-0"
+              className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-3 border-white/90 shadow-xl flex-shrink-0"
             >
               <img
                 src={card.headshot}
@@ -99,39 +99,57 @@ function PlayerCard({ card, isRevealed, onReveal }: {
             </motion.div>
             
             <div className="flex-1 min-w-0">
-              <h3 className="text-2xl font-bold text-white leading-tight mb-1">{card.playerName}</h3>
-              <p className="text-white/80 text-sm">{card.team} • {card.position}</p>
+              <h3 className="text-lg sm:text-2xl font-bold text-white leading-tight mb-1">{card.playerName}</h3>
+              <p className="text-white/80 text-xs sm:text-sm">{card.team} • {card.position}</p>
             </div>
           </div>
 
           {/* Stats Row */}
-          <div className="bg-black/50 backdrop-blur-sm rounded-lg p-4 mb-4">
-            <div className="grid grid-cols-3 gap-6">
+          <div className="bg-black/50 backdrop-blur-sm rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+            <div className="grid grid-cols-3 gap-3 sm:gap-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">{card.stats.points}</div>
+                <div className="text-lg sm:text-2xl font-bold text-white">{card.stats.points}</div>
                 <div className="text-white/70 text-xs font-medium mt-1">PPG</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">{card.stats.assists}</div>
+                <div className="text-lg sm:text-2xl font-bold text-white">{card.stats.assists}</div>
                 <div className="text-white/70 text-xs font-medium mt-1">APG</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">{card.stats.rebounds}</div>
+                <div className="text-lg sm:text-2xl font-bold text-white">{card.stats.rebounds}</div>
                 <div className="text-white/70 text-xs font-medium mt-1">RPG</div>
               </div>
             </div>
           </div>
 
-          {/* Rarity Stars */}
-          {card.rarity !== 'common' && (
-            <div className="flex justify-center">
-              <div className="flex gap-1">
-                {[...Array(card.rarity === 'legendary' ? 3 : 2)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400 drop-shadow-lg" />
-                ))}
-              </div>
+          {/* Rarity Stars - 5 Star Rating System */}
+          <div className="flex justify-center mt-3 relative z-20">
+            <div className="bg-black/40 backdrop-blur-sm rounded-full px-3 py-2 flex gap-1">
+              {[...Array(5)].map((_, i) => {
+                const getStarCount = (rarity: string) => {
+                  switch (rarity) {
+                    case 'legendary': return 5
+                    case 'rare': return 3
+                    case 'common': return 1
+                    default: return 1
+                  }
+                }
+                const filledStars = getStarCount(card.rarity)
+                const isFilled = i < filledStars
+                
+                return (
+                  <Star 
+                    key={i} 
+                    className={`h-4 w-4 drop-shadow-lg transition-all duration-200 ${
+                      isFilled 
+                        ? 'fill-yellow-400 text-yellow-400' 
+                        : 'fill-gray-300 text-gray-300 opacity-50'
+                    }`} 
+                  />
+                )
+              })}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Rarity Shimmer Effect */}
@@ -158,6 +176,8 @@ function PlayerCard({ card, isRevealed, onReveal }: {
 export function CardReveal({ cards, onRevealComplete }: CardRevealProps) {
   const [revealedIndices, setRevealedIndices] = useState<number[]>([])
   const [autoRevealEnabled, setAutoRevealEnabled] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [modalDismissed, setModalDismissed] = useState(false)
 
   const handleRevealCard = useCallback((index: number) => {
     setRevealedIndices(prev => {
@@ -184,6 +204,17 @@ export function CardReveal({ cards, onRevealComplete }: CardRevealProps) {
 
   const allRevealed = revealedIndices.length === cards.length
 
+  // Show modal after delay when all cards are revealed
+  useEffect(() => {
+    if (allRevealed && !modalDismissed) {
+      const timer = setTimeout(() => {
+        setShowModal(true)
+      }, 2000) // 2 second delay after all cards revealed
+      
+      return () => clearTimeout(timer)
+    }
+  }, [allRevealed, modalDismissed])
+
   // Auto-reveal first card after a short delay
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -195,15 +226,10 @@ export function CardReveal({ cards, onRevealComplete }: CardRevealProps) {
     return () => clearTimeout(timer)
   }, [handleRevealCard, revealedIndices.length])
 
-  useEffect(() => {
-    if (allRevealed) {
-      // Remove auto-advance - let user decide when to proceed
-      // const timer = setTimeout(() => {
-      //   onRevealComplete()
-      // }, 2500)
-      // return () => clearTimeout(timer)
-    }
-  }, [allRevealed, onRevealComplete])
+  const handleCloseModal = () => {
+    setShowModal(false)
+    setModalDismissed(true)
+  }
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -220,38 +246,31 @@ export function CardReveal({ cards, onRevealComplete }: CardRevealProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
             Your Cards
           </h1>
-          <p className="text-xl text-muted-foreground mb-4">
+          <p className="text-lg sm:text-xl text-muted-foreground mb-4">
             {revealedIndices.length} of {cards.length} revealed
           </p>
           
-          {/* Control Buttons */}
+                    {/* Control Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-            {/* Reveal All Button */}
             {!allRevealed && revealedIndices.length > 0 && (
-              <Button variant="outline" onClick={handleRevealAll} className="">
+              <Button variant="outline" onClick={handleRevealAll}>
                 Reveal All Cards
               </Button>
             )}
             
-            {/* Continue Button - Only show when all cards are revealed */}
-            {allRevealed && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5 }}
+            {/* Manual CTA - Show when all revealed and modal dismissed or closed */}
+            {allRevealed && (modalDismissed || !showModal) && (
+              <Button 
+                size="lg" 
+                onClick={onRevealComplete}
+                className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary gap-2"
               >
-                <Button 
-                  size="lg" 
-                  onClick={onRevealComplete}
-                  className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary gap-2"
-                >
-                  <Sparkles className="h-5 w-5" />
-                  View Collection Summary
-                </Button>
-              </motion.div>
+                <Sparkles className="h-5 w-5" />
+                View Collection Summary
+              </Button>
             )}
           </div>
         </motion.div>
@@ -259,7 +278,7 @@ export function CardReveal({ cards, onRevealComplete }: CardRevealProps) {
 
       {/* Cards Grid */}
       <div className="relative z-10 container mx-auto px-4 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-7xl mx-auto">
           {cards.map((card, index) => (
             <PlayerCard
               key={card.id}
@@ -271,25 +290,67 @@ export function CardReveal({ cards, onRevealComplete }: CardRevealProps) {
         </div>
       </div>
 
-      {/* Completion Message - Remove auto-advance overlay */}
-      {allRevealed && (
+      {/* Completion Modal */}
+      {showModal && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="relative z-10 text-center py-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[9999]"
+          onClick={handleCloseModal}
         >
-          <div className="max-w-md mx-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
+            className="bg-card border-2 border-border rounded-2xl p-8 max-w-md mx-4 text-center shadow-2xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCloseModal}
+              className="absolute top-4 right-4 h-8 w-8 p-0 hover:bg-muted"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              className="mb-4"
+              className="mb-6"
             >
-              <Sparkles className="h-12 w-12 mx-auto text-yellow-500" />
+              <Sparkles className="h-16 w-16 mx-auto text-yellow-500" />
             </motion.div>
-            <h2 className="text-2xl font-bold mb-2">All Cards Revealed!</h2>
-            <p className="text-muted-foreground">Check out your amazing collection above, then view the summary when ready.</p>
-          </div>
+            
+            <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+              All Cards Revealed!
+            </h2>
+            
+            <p className="text-muted-foreground mb-8 leading-relaxed">
+              Check out your amazing collection above, then view the summary when ready.
+            </p>
+            
+            <div className="flex flex-col gap-3">
+              <Button 
+                size="lg" 
+                onClick={onRevealComplete}
+                className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary gap-2 text-lg py-6"
+              >
+                <Sparkles className="h-5 w-5" />
+                View Collection Summary
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                onClick={handleCloseModal}
+                className="w-full"
+              >
+                Continue Viewing Cards
+              </Button>
+            </div>
+          </motion.div>
         </motion.div>
       )}
 

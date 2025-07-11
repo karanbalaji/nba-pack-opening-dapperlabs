@@ -1,275 +1,412 @@
-# NBA Pack Opening Experience - Dapper Labs
+# NBA TopShot Pack Opening Experience
 
-An immersive and interactive NBA Top Shot pack opening experience featuring 3D pack models, animated card reveals, and seamless UI/UX design consistent with NBA Top Shot's premium branding.
+> **Dapper Labs Design Engineering Interview Project** - A completely reimagined, immersive pack opening experience that transforms NBA TopShot card discovery into an unforgettable journey through design delight and engineering excellence.
 
 ## 🎯 Project Overview
 
-This project was built as a design engineering interview take-home assignment for Dapper Labs. It simulates a complete NBA Top Shot pack opening experience with:
+This project represents a **complete creative reimagining** of the NBA TopShot pack opening experience, built from the ground up to create "wow moments" rather than iterating on existing solutions. The goal was to simulate an exciting, memorable experience that maintains seamless UI/UX design consistent with NBA TopShot branding while offering smooth, engaging interactions.
 
-- **3D Pack Models** - Interactive 3D pack visualization with realistic opening animations
-- **Card Reveal System** - Dramatic card reveals with player videos and rarity effects  
-- **Premium UI/UX** - Clean, minimalist design matching NBA Top Shot's actual branding
-- **Complete Flow** - Full user journey from pack selection to collection summary
+**Live Demo**: [nba-pack-opening-dapperlabs.vercel.app](https://nba-pack-opening-dapperlabs.vercel.app)
 
-## ✨ Key Features
+### 🎪 The Experience Journey
 
-### 🎮 Interactive Pack Opening Flow
-- **4-State System**: Selection → Opening → Revealing → Summary
-- **3D Pack Visualization** - React Three Fiber powered 3D models
-- **Realistic Animations** - GSAP and Framer Motion for smooth transitions
-- **Progressive Reveal** - Building excitement through staged card reveals
+1. **Pack Selection** → Choose from premium packs with 3D previews and pricing
+2. **3D Pack Opening** → Immersive opening animation with progress tracking and fireworks
+3. **Sequential Card Reveals** → Dramatic card-by-card reveals with NBA highlight videos
+4. **Collection Celebration** → Comprehensive summary with best pull highlighting and statistics
 
-### 🏀 NBA Top Shot Integration
-- **Authentic Player Data** - LeBron James, Stephen Curry, Giannis, Luka Dončić, Jayson Tatum
-- **Rarity System** - Common, Rare, and Legendary cards with visual effects
-- **Player Videos** - Portrait videos for enhanced card experience
-- **Stats Display** - PPG, APG, RPG for each player card
+## ✨ Key Innovation Areas
 
-### 🎨 Premium Design System
-- **NBA Top Shot Branding** - Clean dark interface matching actual TopShot design
-- **Vercel Design System** - Professional color palette and typography
-- **Responsive Layout** - Mobile-first design with perfect desktop scaling
-- **Theme Switching** - Light/dark mode with system preference detection
+### 🎮 **Interactive 3D Experience**
+- **React Three Fiber Integration**: Realistic 3D pack models with smooth opening animations
+- **Physics-Based Interactions**: Natural pack rotation and opening mechanics
+- **Particle Systems**: Custom fireworks and celebration effects for rare pulls
+- **Camera Choreography**: Cinematic camera movements during opening sequence
 
-## 🚀 Tech Stack
+### 🏀 **Video-First Card Design**
+- **NBA Highlight Integration**: Each card features actual player highlight footage
+- **Dynamic Overlays**: Clean information layers over video backgrounds
+- **5-Star Rating System**: Visual rarity indication with filled/empty star states
+- **Responsive Card Layouts**: Single-column mobile, multi-column desktop
 
-### Core Framework
-- **Next.js 15.3.5** with App Router and Turbopack
-- **TypeScript** for type safety and developer experience
-- **React 19** with latest features and optimizations
+### 🎊 **Celebration & Progression**
+- **Smart Modal System**: Contextual completion dialogs with user-controlled progression
+- **Best Pull Highlighting**: Featured showcase of highest rarity card pulled
+- **Value Calculation**: Dynamic pricing based on card rarities and pack guarantees
+- **Social-Ready Moments**: Share-worthy celebration animations and layouts
 
-### 3D Graphics & Animation
-- **@react-three/fiber** - React wrapper for Three.js
-- **@react-three/drei** - Useful helpers for R3F
-- **three** - Core 3D rendering engine
-- **framer-motion** - Smooth UI animations and transitions
-- **gsap** - Professional animation sequences
-- **lottie-react** - Vector animations and effects
+## 🛠 Technology Stack
 
-### UI Components & Styling
-- **TailwindCSS v4** - Utility-first CSS framework
-- **shadcn/ui** - High-quality, accessible components
-- **Radix UI** - Unstyled, accessible primitives
-- **Aceternity UI** - Beautiful 3D card components
-- **next-themes** - Advanced theme management
-- **Lucide React** - Professional icon library
+### **Core Framework**
+- **Next.js 15.3.5** with App Router and Turbopack for lightning-fast development
+- **TypeScript** for complete type safety and enhanced developer experience
+- **React 19** with latest concurrent features and optimizations
 
-## 🏗️ Project Architecture
+### **3D Graphics & Animation**
+- **@react-three/fiber** - React wrapper for Three.js with declarative 3D scenes
+- **@react-three/drei** - Essential helpers for cameras, lighting, and interactions
+- **three** - Core 3D rendering engine with WebGL optimization
+- **framer-motion** - Professional UI animations and smooth transitions
 
-### Component Structure
+### **UI Components & Styling**
+- **TailwindCSS v4** - Utility-first CSS with custom design system
+- **shadcn/ui** - High-quality, accessible component library
+- **Radix UI** - Unstyled, accessible primitives for complex interactions
+- **next-themes** - Advanced theme management with system preference detection
+- **Lucide React** - Professional icon library with consistent design language
+
+## 🏗 Architecture & Design Decisions
+
+### **Component Architecture**
 ```
 src/components/pack-opening/
-├── PackOpeningFlow.tsx      # Main orchestrator - manages 4 states
-├── PackSelector.tsx         # Pack selection with pricing and rarity
-├── PackOpening.tsx         # 3D pack opening animations  
-├── CardReveal.tsx          # Interactive 3D card reveals
-└── CollectionSummary.tsx   # Results summary and statistics
+├── PackOpeningFlow.tsx      # 🎭 Main orchestrator - manages 4-state flow
+├── PackSelector.tsx         # 🎁 Pack selection with 3D previews
+├── PackOpening.tsx         # 🎪 3D opening animation with progress
+├── CardReveal.tsx          # 🃏 Sequential card reveals with videos
+└── CollectionSummary.tsx   # 🏆 Results summary and statistics
 ```
 
-### Flow States
-1. **Selection** (`PackSelector`) - Choose between Freshman Gems ($29.99) or Elite Series ($49.99)
-2. **Opening** (`PackOpening`) - 3D pack opening with progress tracking and particle effects
-3. **Revealing** (`CardReveal`) - Sequential card reveals with player videos and stats
-4. **Summary** (`CollectionSummary`) - Collection overview with value calculation and best pulls
-
-### Asset Organization
-```
-public/media/
-├── player-headshots/        # Player profile images
-├── player-videos/          # Portrait videos for card reveals
-├── pack-images/            # 2D pack artwork
-├── 3D/                     # 3D .glb pack models
-└── top-shot-logo.png       # NBA Top Shot branding
-```
-
-## 🎮 Pack Opening Experience
-
-### Pack Selection
-- **Two Premium Options**: Freshman Gems (Rare guaranteed) and Elite Series (Legendary guaranteed)
-- **Visual Pack Models**: High-quality 3D renders with rarity badges
-- **Pricing Display**: Clear $29.99 and $49.99 pricing with guarantee information
-- **Hover Effects**: Smooth scaling and visual feedback on pack cards
-
-### 3D Pack Opening
-- **React Three Fiber Scene**: Realistic 3D pack model rendering
-- **Opening Animation**: Smooth pack unwrapping with particle effects
-- **Progress Tracking**: Visual progress bar showing opening completion
-- **Sound Integration**: Prepared for audio feedback (use-sound integrated)
-
-### Card Revelation
-- **Sequential Reveals**: Cards revealed one by one for maximum drama
-- **3D Card Effects**: Aceternity 3D card components with realistic lighting
-- **Player Integration**: Video backgrounds with player headshots
-- **Rarity Effects**: Special visual effects for Rare and Legendary cards
-- **Stats Display**: Player statistics (Points, Assists, Rebounds per game)
-
-### Collection Summary
-- **Best Pull Highlight**: Featured card with highest rarity
-- **Collection Stats**: Total cards, rarity breakdown, estimated value
-- **Value Calculation**: Dynamic pricing based on card rarities
-- **Return Navigation**: Smooth transition back to pack selection
-
-## 🏀 Player Data & Assets
-
-### Featured Players
-- **LeBron James** (Legendary) - Lakers forward with premium stats
-- **Stephen Curry** (Rare) - Warriors guard with elite shooting stats  
-- **Giannis Antetokounmpo** (Rare) - Bucks forward with dominant stats
-- **Luka Dončić** (Common) - Mavericks guard with rising star status
-- **Jayson Tatum** (Common) - Celtics forward with solid all-around stats
-
-### Asset Types
-- **Headshot Images** - High-quality player portraits
-- **Portrait Videos** - Dynamic player video content
-- **3D Pack Models** - Realistic .glb pack representations
-- **Pack Artwork** - 2D pack images for selection interface
-
-## 🛠️ Installation & Setup
-
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/karanbalaji/nba-pack-opening-dapperlabs.git
-   cd nba-pack-opening-dapperlabs
-   ```
-
-2. **Install Dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start Development Server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open Application**
-   Navigate to [http://localhost:3000](http://localhost:3000)
-
-## 📦 Available Scripts
-
-- `npm run dev` - Start development server with Turbopack
-- `npm run build` - Build optimized production bundle
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint for code quality
-
-## 🎨 Design Philosophy
-
-### NBA Top Shot Consistency
-- **Minimalist Dark Theme** - Matches actual NBA Top Shot interface
-- **Card-Focused Design** - Cards are the hero elements with premium presentation
-- **Subtle Premium Effects** - Elegant animations without overwhelming users
-- **Clean Typography** - Professional Geist font family
-
-### User Experience Principles
-- **Progressive Disclosure** - Information revealed at optimal moments
-- **Emotional Pacing** - Building excitement through the opening sequence
-- **Instant Feedback** - Responsive interactions and visual confirmations
-- **Accessibility First** - Screen reader support and keyboard navigation
-
-## 🔧 Key Technical Implementations
-
-### 3D Rendering Pipeline
+### **State Management Strategy**
 ```typescript
-// React Three Fiber scene with optimized performance
-<Canvas camera={{ position: [0, 0, 5] }}>
-  <ambientLight intensity={0.5} />
-  <pointLight position={[10, 10, 10]} />
-  <PackModel onOpenComplete={handlePackOpened} />
-</Canvas>
-```
-
-### State Management
-```typescript
-// Clean state transitions with TypeScript
 type PackOpeningState = 'selection' | 'opening' | 'revealing' | 'summary'
+
+// Clean, predictable state transitions
 const [currentState, setCurrentState] = useState<PackOpeningState>('selection')
+const [selectedCards, setSelectedCards] = useState<Card[]>([])
+const [packData, setPackData] = useState<Pack | null>(null)
 ```
 
-### Animation Orchestration
+### **Design Philosophy: "Progressive Delight"**
+
+#### **Anticipation Building**
+- **Staged Reveals**: Cards reveal one-by-one with perfect timing
+- **Visual Hierarchy**: Clear progression from pack → individual cards → collection
+- **Suspense Mechanics**: 2-second delays and smooth animations build excitement
+
+#### **Celebration Moments**
+- **Rarity-Based Effects**: Legendary cards trigger fireworks and particle systems
+- **Modal Celebrations**: Achievement-style completion dialogs
+- **Value Recognition**: Immediate feedback on pull quality and collection worth
+
+#### **User Control**
+- **Flexible Pacing**: Users control when to advance between stages
+- **Dismissible Modals**: Close celebrations and continue viewing cards
+- **Manual Progression**: Always-available CTA buttons for summary access
+
+## 🎨 NBA TopShot Brand Consistency
+
+### **Visual Identity Matching**
+- **Dark Theme Preference**: Professional dark interface matching TopShot aesthetics
+- **Premium Typography**: Gradient text effects and consistent Geist font usage
+- **Card-Focused Design**: Cards as hero elements with video backgrounds
+- **Clean Information Hierarchy**: Stats, rarity, and player info clearly organized
+
+### **Authentic NBA Integration**
+- **Real Player Data**: LeBron James, Stephen Curry, Giannis, Luka Dončić, Jayson Tatum
+- **Actual Statistics**: PPG, APG, RPG from current NBA seasons
+- **Team Branding**: Accurate team abbreviations and position data
+- **Highlight Videos**: Portrait-oriented NBA footage for premium card experience
+
+## 🚀 Performance Optimizations
+
+### **Bundle & Asset Optimization**
 ```typescript
-// Framer Motion for smooth UI transitions
-<motion.div
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.6 }}
->
+// Code splitting for optimal loading
+const PackOpening = dynamic(() => import('./PackOpening'), {
+  loading: () => <PackOpeningLoader />
+})
+
+// Optimized 3D model loading
+const { scene } = useGLTF('/media/3D/card-pack-3D-1.glb')
 ```
 
-## 📱 Responsive Design
+### **Rendering Performance**
+- **React 18 Concurrent Features**: Automatic batching and time-slicing
+- **Next.js 15 Optimizations**: Turbopack bundling and automatic image optimization
+- **3D Performance**: Efficient geometries, optimized lighting, and frame rate monitoring
+- **Animation Performance**: GPU-accelerated transforms and compositing layers
 
-### Breakpoint Strategy
-- **Mobile First** - Optimized for 375px+ screens
-- **Tablet Enhanced** - Rich experience on 768px+ devices  
-- **Desktop Premium** - Full feature set on 1024px+ displays
-- **Ultra-wide Support** - Scales beautifully on large monitors
+### **Mobile Optimization**
+- **Responsive 3D Scenes**: Adaptive complexity based on device capabilities
+- **Touch-Optimized Interactions**: Proper touch targets and gesture support
+- **Progressive Enhancement**: Core experience works without 3D support
+- **Asset Compression**: Optimized videos and images for mobile networks
 
-### Performance Optimizations
-- **Turbopack** - Next.js 15's ultra-fast bundler
-- **Image Optimization** - Next.js automatic image optimization
-- **Component Lazy Loading** - Code splitting for faster initial loads
-- **3D Model Optimization** - Efficient .glb assets with compression
+## 📱 Responsive Design Implementation
 
-## 🌟 Special Features
+### **Mobile-First Approach**
+```css
+/* Adaptive grid system */
+.card-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+}
 
-### Interactive Elements
-- **3D Pack Rotation** - Mouse/touch interaction with pack models
-- **Card Flip Animations** - Realistic card reveal mechanics
-- **Particle Effects** - Premium visual effects during pack opening
-- **Smooth Transitions** - Seamless flow between all states
+/* Responsive card sizing */
+.card-container {
+  @apply h-[400px] sm:h-[500px];
+}
 
-### Premium Polish
-- **Custom Loading States** - Branded loading animations
-- **Error Boundaries** - Graceful error handling
-- **Offline Support** - Service worker for asset caching
-- **Analytics Ready** - Event tracking integration points
+/* Scalable typography */
+.card-title {
+  @apply text-lg sm:text-2xl;
+}
+```
 
-## 🚀 Deployment
+### **Breakpoint Strategy**
+- **Mobile (375px+)**: Single-column cards, compact UI, essential information
+- **Tablet (768px+)**: Two-column layout, enhanced interactions, expanded stats
+- **Desktop (1024px+)**: Multi-column grids, full feature set, premium animations
+- **Ultra-wide (1440px+)**: Optimized spacing, enhanced visual effects
 
-### Production Build
+## 🔧 Technical Implementation Highlights
+
+### **3D Pack Opening System**
+```typescript
+function PackModel({ onOpenComplete }: PackModelProps) {
+  const { scene } = useGLTF('/media/3D/card-pack-3D-1.glb')
+  const [isOpening, setIsOpening] = useState(false)
+  
+  useFrame((state, delta) => {
+    if (isOpening) {
+      // Smooth opening animation with physics
+      scene.rotation.y += delta * 2
+      scene.position.y = Math.sin(state.clock.elapsedTime) * 0.1
+    }
+  })
+  
+  return <primitive object={scene} />
+}
+```
+
+### **Animation Choreography**
+```typescript
+// Orchestrated card reveal sequence
+const revealCard = useCallback((index: number) => {
+  setRevealedIndices(prev => {
+    const newIndices = [...prev, index]
+    
+    // Auto-advance with perfect timing
+    if (autoRevealEnabled && index < cards.length - 1) {
+      setTimeout(() => revealCard(index + 1), 1200)
+    }
+    
+    return newIndices
+  })
+}, [cards.length, autoRevealEnabled])
+```
+
+### **Modal State Management**
+```typescript
+// Smart modal system with user control
+const [showModal, setShowModal] = useState(false)
+const [modalDismissed, setModalDismissed] = useState(false)
+
+useEffect(() => {
+  if (allRevealed && !modalDismissed) {
+    const timer = setTimeout(() => setShowModal(true), 2000)
+    return () => clearTimeout(timer)
+  }
+}, [allRevealed, modalDismissed])
+```
+
+## 🎪 User Experience Design
+
+### **Emotional Pacing Strategy**
+1. **Selection Excitement**: 3D pack previews build anticipation
+2. **Opening Tension**: Progress bars and animations create suspense
+3. **Reveal Climax**: Sequential card reveals with perfect timing
+4. **Celebration Resolution**: Modal celebrations and value recognition
+
+### **Accessibility Considerations**
+- **Keyboard Navigation**: Full keyboard support for all interactions
+- **Screen Reader Support**: Semantic HTML and ARIA labels
+- **Motion Preferences**: Respects `prefers-reduced-motion` for sensitive users
+- **Color Contrast**: WCAG AA compliant color ratios throughout
+- **Focus Management**: Clear focus indicators and logical tab order
+
+## 🔄 Integration with Larger Applications
+
+### **API Integration Points**
+```typescript
+// Ready for real pack/card endpoints
+interface PackAPIResponse {
+  id: string
+  name: string
+  price: number
+  rarity: 'common' | 'rare' | 'legendary'
+  guarantees: RarityGuarantee[]
+}
+
+interface CardRevealResponse {
+  cards: Card[]
+  packId: string
+  transactionId: string
+  totalValue: number
+}
+```
+
+### **State Management Integration**
+```typescript
+// Redux/Zustand integration ready
+interface AppState {
+  user: UserState
+  inventory: InventoryState
+  packOpening: PackOpeningState
+}
+
+// Event system for analytics
+const trackPackOpening = (event: PackOpeningEvent) => {
+  analytics.track('pack_opened', {
+    packId: event.packId,
+    cardsRevealed: event.cards.length,
+    totalValue: event.totalValue,
+    bestPull: event.bestCard.rarity
+  })
+}
+```
+
+### **Performance Monitoring**
+```typescript
+// Real User Monitoring integration
+const PackOpeningWithMetrics = () => {
+  useEffect(() => {
+    const startTime = performance.now()
+    
+    return () => {
+      const duration = performance.now() - startTime
+      reportMetric('pack_opening_duration', duration)
+    }
+  }, [])
+  
+  return <PackOpeningFlow />
+}
+```
+
+## 🎯 Key Challenges & Solutions
+
+### **Challenge 1: 3D Performance on Mobile**
+**Problem**: Complex 3D scenes causing frame drops on lower-end devices
+**Solution**: 
+- Adaptive quality settings based on device capabilities
+- Efficient LOD (Level of Detail) systems for 3D models
+- Fallback 2D animations for unsupported devices
+
+### **Challenge 2: Animation Timing Coordination**
+**Problem**: Coordinating multiple animation layers across components
+**Solution**:
+- Centralized animation timeline with Framer Motion
+- Callback-based sequencing for predictable timing
+- Shared animation context for synchronized effects
+
+### **Challenge 3: Video Asset Loading**
+**Problem**: Large video files impacting initial load times
+**Solution**:
+- Progressive loading with placeholder images
+- Compressed video formats (H.264/H.265)
+- Preloading strategies based on user interaction patterns
+
+### **Challenge 4: State Synchronization**
+**Problem**: Keeping UI state in sync across complex component tree
+**Solution**:
+- Single source of truth with useState hooks
+- Callback prop patterns for predictable data flow
+- TypeScript interfaces for state validation
+
+## 📊 Success Metrics & KPIs
+
+### **User Engagement**
+- **Session Duration**: Target 3+ minutes per pack opening
+- **Completion Rate**: 95%+ users complete full flow
+- **Return Engagement**: Users return for experience quality
+
+### **Technical Performance**
+- **Load Time**: <2 seconds initial page load
+- **Frame Rate**: Consistent 60fps during animations
+- **Mobile Performance**: <3 second first contentful paint
+
+### **Business Impact**
+- **Conversion Rate**: Higher likelihood to purchase additional packs
+- **Social Sharing**: Share-worthy moments drive organic growth
+- **User Satisfaction**: Premium experience increases perceived value
+
+## 🚀 Getting Started
+
+### **Prerequisites**
+- Node.js 18+ 
+- npm, yarn, or pnpm
+- Modern browser with WebGL support
+
+### **Installation & Setup**
 ```bash
-npm run build
-npm start
+# Clone the repository
+git clone https://github.com/karanbalaji/nba-pack-opening-dapperlabs
+cd nba-pack-opening-dapperlabs
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Open application
+open http://localhost:3000
 ```
 
-### Vercel Deployment
-```bash
-npx vercel --prod
-```
+### **Available Scripts**
+- `npm run dev` - Development server with hot reload
+- `npm run build` - Production build with optimizations
+- `npm run start` - Production server
+- `npm run lint` - Code quality checks
+- `npm run type-check` - TypeScript validation
 
-The application is optimized for:
-- **Vercel** - Zero-config deployment with automatic optimizations
-- **Netlify** - Static site generation with form handling
-- **AWS/Azure** - Container deployment with Docker support
+## 🔮 Future Enhancement Roadmap
 
-## 🤝 Development Notes
+### **Phase 1: Enhanced Interactions**
+- **Haptic Feedback**: Vibration for mobile pack opening
+- **Audio Integration**: Immersive sound design with pack sounds
+- **Gesture Controls**: Swipe gestures for card navigation
 
-### Interview Assignment Context
-This project demonstrates:
-- **Full-Stack Thinking** - Complete user journey implementation
-- **3D Web Development** - Advanced Three.js integration with React
-- **Animation Expertise** - Professional motion design and timing
-- **UI/UX Excellence** - Pixel-perfect implementation of design requirements
-- **Performance Focus** - Optimized bundle size and rendering performance
+### **Phase 2: Social Features**
+- **Multiplayer Opening**: Shared pack opening experiences
+- **Collection Sharing**: Social media integration for rare pulls
+- **Leaderboards**: Community rankings and achievements
 
-### Code Quality
-- **TypeScript Strict Mode** - Full type safety throughout
-- **ESLint Configuration** - Enforced code standards and best practices
-- **Component Architecture** - Reusable, maintainable component design
-- **Performance Monitoring** - React DevTools and Lighthouse optimization
+### **Phase 3: Advanced Features**
+- **AR Integration**: Real-world pack opening with camera
+- **AI Personalization**: Customized experiences based on user preferences
+- **Blockchain Integration**: Real NFT minting and ownership
 
-## 📄 License
+## 📄 Project Outcome
 
-This project is part of the Dapper Labs design engineering interview process.
+### **Interview Objectives Met**
+✅ **Engaging Experience**: 3D interactions and video-first design create memorable moments  
+✅ **Interactive Prototype**: Complete functional implementation with all states  
+✅ **Modern Technologies**: Next.js 15, TypeScript, React Three Fiber showcase technical skills  
+✅ **Responsive Design**: Mobile-first approach with perfect desktop scaling  
+✅ **NBA TopShot Consistency**: Authentic branding and premium aesthetic  
+✅ **Creative Innovation**: Completely reimagined experience vs iterative improvement  
+
+### **Technical Excellence Demonstrated**
+- **Advanced React Patterns**: Custom hooks, context, and component architecture
+- **3D Web Development**: Three.js mastery with React integration
+- **Animation Expertise**: Professional motion design and timing
+- **Performance Optimization**: Bundle size, rendering, and user experience focus
+- **Production Readiness**: Deployment optimization and monitoring integration
 
 ## 👨‍💻 Author
 
-**Karan Balaji**
-- GitHub: [@karanbalaji](https://github.com/karanbalaji)
-- LinkedIn: [karanbalaji](https://www.linkedin.com/in/karanbalaji/)
-- Project: [NBA Pack Opening Experience](https://github.com/karanbalaji/nba-pack-opening-dapperlabs)
+**Karan Balaji** - Design Engineer  
+📧 [karan@example.com](mailto:karan@example.com)  
+🔗 [LinkedIn](https://www.linkedin.com/in/karanbalaji/)  
+🐙 [GitHub](https://github.com/karanbalaji)
+
+## 📝 License
+
+This project is part of the Dapper Labs design engineering interview process.
 
 ---
 
-Built with ❤️ for NBA Top Shot by Dapper Labs
+**Built with ❤️ for NBA TopShot** | **Next.js 15 • TypeScript • React Three Fiber • Framer Motion**
 
-**Core Technologies:** Next.js 15 • TypeScript • React Three Fiber • Framer Motion • TailwindCSS • shadcn/ui
+> *"Creating unforgettable digital experiences through the perfect blend of design delight and engineering excellence."*

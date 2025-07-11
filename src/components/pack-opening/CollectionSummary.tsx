@@ -193,16 +193,34 @@ export function CollectionSummary({ cards, pack, onReturnToSelection }: Collecti
                     </div>
                   </div>
 
-                  {/* Rarity Stars */}
-                  {bestCard.rarity !== 'common' && (
-                    <div className="flex justify-center mt-2">
-                      <div className="flex gap-1">
-                        {[...Array(bestCard.rarity === 'legendary' ? 3 : 2)].map((_, i) => (
-                          <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400 drop-shadow-lg" />
-                        ))}
-                      </div>
+                  {/* Rarity Stars - 5 Star Rating System */}
+                  <div className="flex justify-center mt-2 relative z-20">
+                    <div className="bg-black/40 backdrop-blur-sm rounded-full px-2 py-1 flex gap-1">
+                      {[...Array(5)].map((_, i) => {
+                        const getStarCount = (rarity: string) => {
+                          switch (rarity) {
+                            case 'legendary': return 5
+                            case 'rare': return 3
+                            case 'common': return 1
+                            default: return 1
+                          }
+                        }
+                        const filledStars = getStarCount(bestCard.rarity)
+                        const isFilled = i < filledStars
+                        
+                        return (
+                          <Star 
+                            key={i} 
+                            className={`h-3 w-3 drop-shadow-lg transition-all duration-200 ${
+                              isFilled 
+                                ? 'fill-yellow-400 text-yellow-400' 
+                                : 'fill-gray-300 text-gray-300 opacity-50'
+                            }`} 
+                          />
+                        )
+                      })}
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* Rarity Shimmer Effect */}
@@ -374,16 +392,34 @@ export function CollectionSummary({ cards, pack, onReturnToSelection }: Collecti
                         </div>
                       </div>
 
-                      {/* Rarity Stars */}
-                      {card.rarity !== 'common' && (
-                        <div className="flex justify-center mt-3">
-                          <div className="flex gap-1">
-                            {[...Array(card.rarity === 'legendary' ? 3 : 2)].map((_, i) => (
-                              <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400 drop-shadow-lg" />
-                            ))}
-                          </div>
+                      {/* Rarity Stars - 5 Star Rating System */}
+                      <div className="flex justify-center mt-3 relative z-20">
+                        <div className="bg-black/40 backdrop-blur-sm rounded-full px-3 py-2 flex gap-1">
+                          {[...Array(5)].map((_, i) => {
+                            const getStarCount = (rarity: string) => {
+                              switch (rarity) {
+                                case 'legendary': return 5
+                                case 'rare': return 3
+                                case 'common': return 1
+                                default: return 1
+                              }
+                            }
+                            const filledStars = getStarCount(card.rarity)
+                            const isFilled = i < filledStars
+                            
+                            return (
+                              <Star 
+                                key={i} 
+                                className={`h-4 w-4 drop-shadow-lg transition-all duration-200 ${
+                                  isFilled 
+                                    ? 'fill-yellow-400 text-yellow-400' 
+                                    : 'fill-gray-300 text-gray-300 opacity-50'
+                                }`} 
+                              />
+                            )
+                          })}
                         </div>
-                      )}
+                      </div>
                     </div>
 
                     {/* Rarity Shimmer Effect */}
